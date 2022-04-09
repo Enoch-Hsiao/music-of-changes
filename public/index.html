@@ -8,7 +8,7 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="https://paulrosen.github.io/abcjs/examples/examples-styles.css" />
 
-  <title>abcjs: Synth Demo</title>
+  <title>Music of Changes Generator</title>
 
   <link rel="stylesheet" type="text/css" href="abcjs-audio.css">
   <style>
@@ -88,7 +88,6 @@
         var lastSelection = document.querySelectorAll("#paper svg .highlight");
         for (var k = 0; k < lastSelection.length; k++)
           lastSelection[k].classList.remove("highlight");
-        //var el = document.querySelector(".feedback").innerHTML = "<div class='label'>Current Note:</div>" + JSON.stringify(ev, null, 4);
         for (var i = 0; i < ev.elements.length; i++) {
           var note = ev.elements[i];
           for (var j = 0; j < note.length; j++) {
@@ -140,7 +139,6 @@
     "c","d", "e", "f", "g", "a", "b",
     "c'","d'", "e'", "f'", "g'", "a'", "b'",
     "c''"]
-
     noteLengths = ['2','4','8','16','24,','32','48','64','96','128']
     count = 0
 
@@ -213,18 +211,7 @@
 			// TODO-PER: This will allow the callback function to have access to timing info - this should be incorporated into the render at some point.
 			var midiBuffer = new ABCJS.synth.CreateSynth();
 			midiBuffer.init({
-				//audioContext: new AudioContext(),
 				visualObj: visualObj,
-				// sequence: [],
-				// millisecondsPerMeasure: 1000,
-				// debugCallback: function(message) { console.log(message) },
-				options: {
-					// soundFontUrl: "https://paulrosen.github.io/midi-js-soundfonts/FluidR3_GM/" ,
-					// sequenceCallback: function(noteMapTracks, callbackContext) { return noteMapTracks; },
-					// callbackContext: this,
-					// onEnded: function(callbackContext),
-					// pan: [ -0.5, 0.5 ]
-				}
 			}).then(function (response) {
 				console.log(response);
 				if (synthControl) {
