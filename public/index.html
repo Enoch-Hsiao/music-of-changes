@@ -6,14 +6,14 @@
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="https://paulrosen.github.io/abcjs/examples/examples-styles.css" />
+  <link rel="stylesheet" href="examples.styles.css" />
 
   <title>Music of Changes Generator</title>
 
   <link rel="stylesheet" type="text/css" href="abcjs-audio.css">
   <style>
     main {
-      max-width: 770px;
+      width: 100%;
       margin: 0 auto;
     }
 
@@ -73,7 +73,7 @@
         cursor.setAttributeNS(null, 'y2', 0);
         svg.appendChild(cursor);
       };
-    
+
       self.beatSubdivisions = 2;
 
       self.onBeat = function (beatNumber, totalBeats, totalTime) {
@@ -81,7 +81,7 @@
           self.beatDiv = document.querySelector(".beat");
         self.beatDiv.innerText = "Beat: " + beatNumber + " Total: " + totalBeats + " Total time: " + totalTime;
       };
-    
+
       self.onEvent = function (ev) {
         if (ev.measureStart && ev.left === null)
           return; // this was the second part of a tie across a measure line. Just ignore it.
@@ -121,38 +121,139 @@
 
     var cursorControl = new CursorControl();
 
-    var abc_string =
+    var abc_string_base =
       `
       T: Music of Changes Generator
       L: 1/64
       K: C
-      %%staves {V1}
+      %%staves {V1 V2}
       V: V1 clef=treble
-      [V: V1]
+      V: V2 clef=bass
       `
-
+    var v1 = "[V: V1]"
+    var v2 = "[V: V2]"
+    var abc_string = abc_string_base + v1 + v2
     var synthControl;
 
+    note_names = [
+      "C1", "D1", "E1", "F1", "G1", "A2", "B2",
+      "C2", "D2", "E2", "F2", "G2", "A3", "B3",
+      "C3", "D3", "E3", "F3", "G3", "A4", "B4",
+      "C4", "D4", "E4", "F4", "G4", "A5", "B5",
+      "c5", "d5", "e5", "f5", "g5", "a6", "b6",
+      "c6", "d6", "e6", "f6", "g6", "a7", "b7",
+      "c7", "d7", "e7", "f7", "g7", "a7", "b7",
+      "c8"]
     notes = [
-    "C,", "D,", "E,", "F,", "G,", "A,", "B,",
-    "C","D", "E", "F", "G", "A", "B",
-    "c","d", "e", "f", "g", "a", "b",
-    "c'","d'", "e'", "f'", "g'", "a'", "b'",
-    "c''"]
-    noteLengths = ['2','4','8','16','24,','32','48','64','96','128']
+      "C,,,", "D,,,", "E,,,", "F,,,", "G,,,", "A,,,", "B,,,",
+      "C,,", "D,,", "E,,", "F,,", "G,,", "A,,", "B,,",
+      "C,", "D,", "E,", "F,", "G,", "A,", "B,",
+      "C", "D", "E", "F", "G", "A", "B",
+      "c", "d", "e", "f", "g", "a", "b",
+      "c'", "d'", "e'", "f'", "g'", "a'", "b'",
+      "c''", "d'", "e'", "f'", "g'", "a'", "b'",
+      "c'''"]
+    lengthNames = ['64th', '32nd', '16th', '8th', 'Quarter', 'Half','Whole']
+    lengths = ['', '2', '4', '8', '16', '32', '64']
+    dynamics = ['ppp', 'pp', 'p', 'mp', 'mf', 'f', 'ff', 'fff']
+    accidentalMarking = ['^','_','']
+    accidentalName = ['#','b','']
     count = 0
-
+    
     function addNote() {
-      note = notes[Math.floor(Math.random() * 29)];
-      noteLength = noteLengths[Math.floor(Math.random() * 10) ]
-      abc_string = abc_string + note + noteLength
-      count++
-      if (count == 10) {
-        abc_string = abc_string + "\n"
-        count = 0
+      rest_or_note = Math.floor(Math.random() * 2);
+      if (rest_or_note === 0) {
+        randomNum = Math.floor(Math.random() * 7);
+        restLength = lengths[randomNum];
+        document.getElementById("notes").innerHTML = '';
+        document.getElementById("length").innerHTML = `${lengthNames[randomNum]} Rest`;
+        document.getElementById("dynamic").innerHTML = '';
+        v1 += `z${restLength}`;
+        v2 += `z${restLength}`;
+      } else {
+        dynamic = dynamics[Math.floor(Math.random() * 8)]
+        v1 += `!${dynamic}!`
+        notesText = '';
+        noteLengthNum = Math.floor(Math.random() * 7)
+        noteLength = lengths[noteLengthNum];
+        number_of_notes = Math.floor(Math.random() * 10) + 1;
+        const noteSetV1 = new Set();
+        const noteSetV2 = new Set();
+        while ((noteSetV1.size + noteSetV2.size) < number_of_notes) {
+          randomNum = Math.floor(Math.random() * 49);
+          note = notes[randomNum];;
+          note_name = note_names[randomNum];;
+          randomNumAccidental = Math.floor(Math.random() * 3);
+          accidental = accidentalMarking[randomNumAccidental];
+          notesText += note_name + accidentalName[randomNumAccidental] + ' ';
+          if (randomNum > 21) {
+            noteSetV1.add(accidental + note + noteLength);
+          } else {
+            noteSetV2.add(accidental + note + noteLength);
+          }
+        }
+        
+        if (noteSetV1.size > 1) {
+          v1 += "[";
+          noteSetV1.forEach(note => {
+            v1 += note;
+          })
+          v1 += "]";
+        } else if (noteSetV1.size == 1) {
+          noteSetV1.forEach(note => {
+            v1 += note;
+          });
+        } else {
+          v1 += `z${noteLength}`;
+        }
+
+        if (noteSetV2.size > 1) {
+          v2 += "[";
+          noteSetV2.forEach(note => {
+            v2 += note;
+          })
+          v2 += "]";
+        } else if (noteSetV2.size == 1) {
+          noteSetV2.forEach(note => {
+            v2 += note;
+          })
+        } else {
+          v2 += `z${noteLength}`;
+        }
+
+        document.getElementById("notes").innerHTML = `Note(s): ${notesText}`;
+        document.getElementById("length").innerHTML = `Length: ${lengthNames[noteLengthNum]} Note`;
+        document.getElementById("dynamic").innerHTML = `Dynamic: ${dynamic}`;
       }
-      setTune()
-      load()
+      abc_string = abc_string_base + v1 + v2;
+      count++
+      if (count == 20) {
+        v1 += "\n";
+        v2 += "\n";
+        count = 0;
+      }
+      setTune();
+      load();
+    }
+
+    function reset() {
+      abc_string_base =
+      `
+      T: Music of Changes Generator
+      L: 1/64
+      K: C
+      %%staves {V1 V2}
+      V: V1 clef=treble
+      V: V2 clef=bass
+      `
+      v1 = "[V: V1]"
+      v2 = "[V: V2]"
+      abc_string = abc_string_base + v1 + v2
+      document.getElementById("notes").innerHTML = ``;
+      document.getElementById("length").innerHTML = ``;
+      document.getElementById("dynamic").innerHTML = ``;
+      setTune();
+      load();
     }
 
     function clickListener(abcElem, tuneNumber, classes, analysis, drag, mouseEvent) {
@@ -202,46 +303,61 @@
     }
 
     function setTune(userAction) {
-			synthControl.disable(true);
-			var visualObj = ABCJS.renderAbc("paper", abc_string, abcOptions)[0];
-			var midi = ABCJS.synth.getMidiFile(abc_string);
-			var midiButton = document.querySelector(".midi");
-			midiButton.innerHTML = midi;
+      synthControl.disable(true);
+      var visualObj = ABCJS.renderAbc("paper", abc_string, abcOptions)[0];
+      var midi = ABCJS.synth.getMidiFile(abc_string);
+      var midiButton = document.querySelector(".midi");
+      midiButton.innerHTML = midi;
 
-			// TODO-PER: This will allow the callback function to have access to timing info - this should be incorporated into the render at some point.
-			var midiBuffer = new ABCJS.synth.CreateSynth();
-			midiBuffer.init({
-				visualObj: visualObj,
-			}).then(function (response) {
-				console.log(response);
-				if (synthControl) {
-					synthControl.setTune(visualObj, userAction).then(function (response) {
-						console.log("Audio successfully loaded.")
-					}).catch(function (error) {
-						console.warn("Audio problem:", error);
-					});
-				}
-			}).catch(function (error) {
-				console.warn("Audio problem:", error);
-			});
-		}
+      // TODO-PER: This will allow the callback function to have access to timing info - this should be incorporated into the render at some point.
+      var midiBuffer = new ABCJS.synth.CreateSynth();
+      midiBuffer.init({
+        visualObj: visualObj,
+      }).then(function (response) {
+        //console.log(response);
+        if (synthControl) {
+          synthControl.setTune(visualObj, userAction).then(function (response) {
+            //console.log("Audio successfully loaded.")
+          }).catch(function (error) {
+            console.warn("Audio problem:", error);
+          });
+        }
+      }).catch(function (error) {
+        console.warn("Audio problem:", error);
+      });
+    }
 
   </script>
 </head>
 
 <body onload="load()">
   <header>
-    <img src="https://paulrosen.github.io/abcjs/img/abcjs_comp_extended_08.svg" alt="abcjs logo">
     <h1>Music of Changes Generator</h1>
+    <h2>Algorithm inspired by John Cage's Music of Changes for Piano (1951) </h2>
   </header>
   <div class="container">
     <main>
-      <button class="start">Start/Pause</button>
-      <button class="download" style="display: none;">Download</button>
-      <button class="random-note-generator" onclick="addNote()">Generate random note</button>
-      <div class="midi">MIDI</div>
-      <div id="paper"></div>
-      <div id="audio"></div>
+      <h3>Algorithm</h3>
+      <ul>
+        <li>50% chance of note or rest</li>
+        <li>If note, randomly pick 1 to 10 note cluster.</li>
+        <li>Lengths of rests/notes range from 64th to whole note.</li>
+        <li>Dynamics range from ppp to fff</li>
+      </ul>
+      <div class="container">
+        <div class="midi">MIDI</div>
+        <button class="start">Start/Pause</button>
+        <button class="download" style="display: none;">Download</button>
+        <button class="random-note-generator" onclick="addNote()">Generate random note</button>
+        <button class="reset" onclick="reset()">Reset</button>
+        <span>
+          <div id="notes"></div>
+          <div id="length"></div>
+          <div id="dynamic"></div>
+        </span>
+        <div id="paper"></div>
+        <div id="audio"></div>
+      </div>
       <p class="beat"></p>
       <p class="click-explanation" style="display:none;"></p>
       <pre class="clicked-info"></pre>

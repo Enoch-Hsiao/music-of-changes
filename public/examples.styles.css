@@ -83,6 +83,7 @@ h1 {
 
 h2 {
   margin-bottom: 5px;
+  text-align: center;
 }
 
 p {
@@ -171,3 +172,4 @@ tr:nth-child(even) {
   .visible-background svg {
     background: #404040;
   }
+}
