@@ -171,8 +171,11 @@
         v1 += `z${restLength}`;
         v2 += `z${restLength}`;
       } else {
-        dynamic = dynamics[Math.floor(Math.random() * 8)]
-        v1 += `!${dynamic}!`
+        dynamicNum = Math.floor(Math.random() * 32)
+        if (dynamicNum < 8) {
+          dynamic = dynamics[dynamicNum]
+          v1 += `!${dynamic}!`
+        }
         notesText = '';
         noteLengthNum = Math.floor(Math.random() * 7)
         noteLength = lengths[noteLengthNum];
@@ -223,7 +226,11 @@
 
         document.getElementById("notes").innerHTML = `Note(s): ${notesText}`;
         document.getElementById("length").innerHTML = `Length: ${lengthNames[noteLengthNum]} Note`;
-        document.getElementById("dynamic").innerHTML = `Dynamic: ${dynamic}`;
+        if (dynamicNum < 8) {
+          document.getElementById("dynamic").innerHTML = `Dynamic: ${dynamic}`;
+        } else {
+          document.getElementById("dynamic").innerHTML = ``;
+        }
       }
       abc_string = abc_string_base + v1 + v2;
       count++
@@ -340,9 +347,9 @@
       <h3>Algorithm</h3>
       <ul>
         <li>50% chance of note or rest</li>
-        <li>If note, randomly pick 1 to 10 note cluster.</li>
+        <li>If a note is chosen, randomly pick 1 to 10 note cluster.</li>
         <li>Lengths of rests/notes range from 64th to whole note.</li>
-        <li>Dynamics range from ppp to fff</li>
+        <li>If dynamic is chosen (25% chance), dynamics range from ppp to fff</li>
       </ul>
       <div class="container">
         <div class="midi">MIDI</div>
